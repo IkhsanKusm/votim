@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\FolderController;
 use App\Http\Controllers\Web\ActivityController;
+use App\Http\Controllers\Web\PublicActivityController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,3 +38,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Activity Show/Dashboard
     Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
 });
+
+// Public Routes
+Route::get('/v/{slug}', [PublicActivityController::class, 'show'])->name('public.show');
+Route::post('/v/{slug}', [PublicActivityController::class, 'submit'])->name('public.submit');
