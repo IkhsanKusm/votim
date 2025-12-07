@@ -1,5 +1,7 @@
-// routes/web.php
+<?php
 
+use App\Http\Controllers\Web\FolderController;
+use App\Http\Controllers\Web\ActivityController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +24,16 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', function () {
         return "Welcome to Insight Studio, " . auth()->user()->display_name;
     })->name('dashboard');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Folder CRUD
+    Route::resource('folders', FolderController::class);
+
+    // Activity Creation Flow (Nested)
+    Route::get('/folders/{folder}/activities/create', [ActivityController::class, 'create'])->name('activities.create');
+    Route::post('/folders/{folder}/activities', [ActivityController::class, 'store'])->name('activities.store');
+    
+    // Activity Show/Dashboard
+    Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
 });

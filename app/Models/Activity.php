@@ -9,6 +9,8 @@ class Activity extends Model
 {
     use HasFactory;
 
+    protected $guarded = ['id'];
+
     protected $fillable = [
         'folder_id',
         'type',
