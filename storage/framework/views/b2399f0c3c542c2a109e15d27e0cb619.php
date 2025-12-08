@@ -1,10 +1,10 @@
 <!-- resources/views/layouts/app.blade.php -->
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'Votim - Insight Studio' }}</title>
+    <title><?php echo e($title ?? 'Vot.ai - Insight Studio'); ?></title>
 
     <!-- Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?> -->
     <script src="https://cdn.tailwindcss.com"></script> <!-- Fallback dev -->
 
     <style>
@@ -49,20 +49,20 @@
     <div class="relative z-10 flex h-screen overflow-hidden">
         
         <!-- 1. Sidebar (Fixed Left) -->
-        @include('layouts.partials.sidebar')
+        <?php echo $__env->make('layouts.partials.sidebar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
         <!-- 2. Main Content Wrapper -->
         <div class="flex-1 flex flex-col h-full relative overflow-y-auto overflow-x-hidden ml-[260px]">
             
             <!-- 3. Top Bar -->
-            @include('layouts.partials.topbar')
+            <?php echo $__env->make('layouts.partials.topbar', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
             <!-- 4. Content Stage -->
             <main class="flex-1 p-8 pt-24">
-                @yield('content')
+                <?php echo $__env->yieldContent('content'); ?>
             </main>
         </div>
     </div>
 
 </body>
-</html>
+</html><?php /**PATH D:\ASUS\Documents\Repository\votim\resources\views/layouts/app.blade.php ENDPATH**/ ?>

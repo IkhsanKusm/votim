@@ -7,90 +7,85 @@ use App\Models\Activity;
 use App\Models\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class PublicActivityController extends Controller
 {
     /**
-     * Tampilkan Halaman Voting / Opini
+     * Display the specified resource by slug.
      */
     public function show($slug)
     {
-        $activity = Activity::where('slug', $slug)
-            ->where('status', 'active')
-            ->firstOrFail();
+        $activity = Activity::where('slug', $slug)->firstOrFail();
 
-        // Cek Fingerprint untuk UX (Apakah user ini sudah pernah vote?)
-        $fingerprint = Cookie::get('vot_guest_fp');
-        $hasVoted = false;
-
-        if ($fingerprint) {
-            // Query JSONB Postgres: Cek apakah fingerprint ada di dalam value_data
-            $hasVoted = Response::where('activity_id', $activity->id)
-                ->where('value_data->fingerprint', $fingerprint)
-                ->exists();
+        // Check if closed
+        if ($activity->status !== 'active' || ($activity->closed_at && now()->gt($activity->closed_at))) {
+            return view('pages.public.closed', compact('activity'));
         }
 
-        return view('pages.public.show', compact('activity', 'hasVoted'));
+        return view('pages.public.show', compact('activity'));
     }
 
     /**
-     * Handle Submission
+     * Store a newly created response in storage.
      */
-    public function submit(Request $request, $slug)
+    public function store(Request $request, $slug)
     {
-        $activity = Activity::where('slug', $slug)
-            ->where('status', 'active')
-            ->firstOrFail();
+        $activity = Activity::where('slug', $slug)->firstOrFail();
 
-        // 1. Ambil Fingerprint dari Cookie (Identity Proof)
-        $fingerprint = $request->cookie('vot_guest_fp');
-
-        if (!$fingerprint) {
-            throw ValidationException::withMessages(['system' => 'Browser Anda tidak mendukung cookie.']);
+        // 1. Check Status
+        if ($activity->status !== 'active' || ($activity->closed_at && now()->gt($activity->closed_at))) {
+            return back()->with('error', 'This activity is closed.');
         }
 
-        // 2. Validasi Duplicate Vote (Jika Activity disetting "Strict")
-        // Default kita anggap strict untuk demo ini.
-        $alreadyVoted = Response::where('activity_id', $activity->id)
-            ->where('value_data->fingerprint', $fingerprint)
+        // 2. Identify Guest
+        // Prioritize attribute set by Middleware, then cookie
+        $fingerprint = $request->get('guest_fingerprint') ?? $request->cookie('vot_guest_fp') ?? $request->ip();
+
+        // 3. Unique Check (Optional Config: but default safe to enforce for polls)
+        // Check if this fingerprint has already responded to this activity
+        // We look inside the JSONB column value_data->metadata->fingerprint
+        $hasVoted = Response::where('activity_id', $activity->id)
+            ->whereJsonContains('value_data->metadata->fingerprint', $fingerprint)
             ->exists();
 
-        if ($alreadyVoted) {
-            return back()->with('error', 'Anda sudah mengisi form ini sebelumnya.');
+        if ($hasVoted) {
+            return back()->with('error', 'You have already voted on this activity.');
         }
 
-        // 3. Validasi Input Berdasarkan Tipe Activity
+        // 4. Validation based on Type
         $rules = [];
-        if ($activity->type === 'single_choice') {
-            $options = $activity->settings['options'] ?? [];
-            $rules['answer'] = 'required|in:' . implode(',', $options);
-        } elseif ($activity->type === 'rating') {
-            $max = $activity->settings['scale_max'] ?? 5;
-            $rules['rating'] = 'required|integer|min:1|max:' . $max;
-        } elseif ($activity->type === 'open_opinion') {
-            $limit = $activity->settings['char_limit'] ?? 500;
-            $rules['text'] = 'required|string|min:3|max:' . $limit;
+        if ($activity->type === 'poll') {
+            $rules['option'] = 'required'; // Radio button selection
+        } elseif ($activity->type === 'opinion') {
+            $rules['opinion'] = 'required|string|min:3|max:5000';
         }
 
-        $validated = $request->validate($rules);
+        $request->validate($rules);
 
-        // 4. Susun Payload JSONB
-        // Kita simpan jawaban + fingerprint dalam satu kolom untuk hemat storage
-        $payload = array_merge($validated, [
+        // 5. Construct Payload
+        $payload = [];
+
+        if ($activity->type === 'poll') {
+            $payload['choice'] = $request->option;
+        } elseif ($activity->type === 'opinion') {
+            $payload['text'] = $request->opinion;
+        }
+
+        // Add Metadata
+        $payload['metadata'] = [
             'fingerprint' => $fingerprint,
-            'ip_hash'     => md5($request->ip()), // Layer keamanan kedua (opsional)
-            'submitted_at'=> now()->toIso8601String()
-        ]);
+            'ip'          => $request->ip(),
+            'user_agent'  => $request->userAgent(),
+            'timestamp'   => now()->toIso8601String(),
+        ];
 
-        // 5. Simpan ke Database
+        // 6. Save
         Response::create([
             'activity_id' => $activity->id,
-            'value_data'  => $payload,
-            'is_processed_by_ai' => false, // Pending untuk Queue Worker
+            'value_data' => $payload,
+            'is_processed_by_ai' => false,
         ]);
 
-        return back()->with('success', 'Terima kasih! Suara Anda telah direkam.');
+        return back()->with('success', 'Thank you! Your response has been recorded.');
     }
 }

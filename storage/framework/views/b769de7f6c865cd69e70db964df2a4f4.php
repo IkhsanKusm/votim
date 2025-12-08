@@ -1,8 +1,8 @@
-@extends('layouts.app')
 
-@section('title', 'Dashboard')
 
-@section('content')
+<?php $__env->startSection('title', 'Insight Studio'); ?>
+
+<?php $__env->startSection('content'); ?>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Stats Card 1 -->
         <div class="p-6 rounded-2xl glass-panel relative overflow-hidden group hover:-translate-y-1 transition duration-300">
@@ -52,4 +52,5 @@
             <p class="text-xs text-gray-500 mt-1">Voting, Opini, atau Forum</p>
         </div>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH D:\ASUS\Documents\Repository\votim\resources\views/dashboard.blade.php ENDPATH**/ ?>

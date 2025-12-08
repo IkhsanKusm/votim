@@ -1,118 +1,100 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $activity->title }} - Vot.ai</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0B0F19; color: white; }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        /* Animasi masuk */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-enter { animation: fadeUp 0.6s ease-out forwards; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0B0F19; color: #E5E7EB; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
     <!-- Ambient Background -->
-    <div class="fixed inset-0 pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px]"></div>
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-900/30 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-900/20 rounded-full blur-[120px]"></div>
     </div>
 
     <!-- Main Card -->
-    <div class="w-full max-w-lg glass-card rounded-3xl p-8 relative z-10 animate-enter">
+    <div class="w-full max-w-lg relative z-10">
         
-        <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 mb-4 border border-white/10">
-                <span class="text-2xl">
-                    @if($activity->type == 'rating') ⭐ 
-                    @elseif($activity->type == 'single_choice') 📊 
-                    @else 💬 @endif
-                </span>
+        <!-- Logo -->
+        <div class="flex justify-center mb-8">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center font-bold text-white">V</div>
+                <span class="text-xl font-bold tracking-tight text-white">Vot.ai</span>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight mb-2">{{ $activity->title }}</h1>
-            <p class="text-gray-400 text-sm">Powered by Vot.ai • Secure & Anonymous</p>
         </div>
 
-        <!-- Feedback Messages -->
+        <!-- Success Message -->
         @if(session('success'))
-            <div class="bg-green-500/10 border border-green-500/20 text-green-400 p-4 rounded-xl text-center mb-6">
-                <p class="font-medium">✨ {{ session('success') }}</p>
-            </div>
+        <div class="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-center animate-fade-in-up">
+            <svg class="w-12 h-12 mx-auto mb-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <h3 class="font-bold text-lg">Thank You!</h3>
+            <p>{{ session('success') }}</p>
+        </div>
         @elseif(session('error'))
-            <div class="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-center mb-6">
-                <p class="font-medium">{{ session('error') }}</p>
-            </div>
-        @elseif($hasVoted)
-            <div class="bg-blue-500/10 border border-blue-500/20 text-blue-300 p-4 rounded-xl text-center mb-6">
-                <p class="font-medium">Anda sudah mengisi form ini.</p>
-            </div>
+        <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-center">
+            <p>{{ session('error') }}</p>
+        </div>
         @endif
 
-        <!-- Form Stage -->
-        @if(!$hasVoted && !session('success'))
-        <form action="{{ route('public.submit', $activity->slug) }}" method="POST" class="space-y-6">
-            @csrf
+        <!-- Form Card -->
+        @if(!session('success'))
+        <div class="glass rounded-2xl p-8 shadow-2xl">
+            <div class="mb-6">
+                <span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-white/10 text-gray-300 mb-3 capitalize">
+                    {{ $activity->type === 'poll' ? 'Quick Vote' : 'Public Opinion' }}
+                </span>
+                <h1 class="text-2xl font-bold text-white leading-tight">{{ $activity->title }}</h1>
+            </div>
 
-            <!-- 1. RENDER: SINGLE CHOICE -->
-            @if($activity->type === 'single_choice')
-                <div class="space-y-3">
-                    @foreach($activity->settings['options'] as $option)
-                        <label class="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-purple-500/50 cursor-pointer transition group">
-                            <input type="radio" name="answer" value="{{ $option }}" class="w-5 h-5 text-purple-500 border-gray-600 focus:ring-purple-500 bg-transparent">
-                            <span class="text-gray-200 group-hover:text-white transition">{{ $option }}</span>
+            <form action="{{ route('public.activity.store', $activity->slug) }}" method="POST" class="space-y-6">
+                @csrf
+                
+                @if($activity->type === 'poll')
+                    <!-- Poll Options -->
+                    <div class="space-y-3">
+                        @php $options = $activity->settings['options'] ?? []; @endphp
+                        @foreach($options as $option)
+                        <label class="cursor-pointer group block">
+                            <input type="radio" name="option" value="{{ $option }}" class="peer sr-only" required>
+                            <div class="p-4 rounded-xl border border-white/10 bg-white/5 peer-checked:bg-purple-600 peer-checked:border-purple-500 peer-checked:text-white transition group-hover:bg-white/10 flex items-center justify-between">
+                                <span class="font-medium text-gray-300 peer-checked:text-white">{{ $option }}</span>
+                                <div class="w-5 h-5 rounded-full border border-gray-500 peer-checked:bg-white peer-checked:border-white"></div>
+                            </div>
                         </label>
-                    @endforeach
-                </div>
-            @endif
+                        @endforeach
+                    </div>
+                @elseif($activity->type === 'opinion')
+                    <!-- Opinion Textarea -->
+                    <div>
+                        <textarea name="opinion" rows="5" required minlength="3" placeholder="Type your thoughts here..." 
+                            class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition resize-none"></textarea>
+                        <p class="text-xs text-gray-500 mt-2 text-right">Your opinion will be anonymized and processed.</p>
+                    </div>
+                @endif
 
-            <!-- 2. RENDER: RATING (STAR) -->
-            @if($activity->type === 'rating')
-                <div class="flex justify-center gap-2 py-4">
-                    @php $max = $activity->settings['scale_max'] ?? 5; @endphp
-                    @for($i = 1; $i <= $max; $i++)
-                        <label class="cursor-pointer group relative">
-                            <input type="radio" name="rating" value="{{ $i }}" class="peer sr-only">
-                            <!-- Star SVG: Gray by default, Yellow on hover/checked -->
-                            <svg class="w-12 h-12 text-gray-600 peer-checked:text-yellow-400 hover:text-yellow-300 transition transform hover:scale-110" 
-                                 fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                            </svg>
-                        </label>
-                    @endfor
-                </div>
-            @endif
-
-            <!-- 3. RENDER: OPEN OPINION -->
-            @if($activity->type === 'open_opinion')
-                <div>
-                    <textarea name="text" rows="5" required
-                        placeholder="Tulis pendapat Anda di sini..."
-                        maxlength="{{ $activity->settings['char_limit'] ?? 500 }}"
-                        class="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition resize-none"></textarea>
-                    <p class="text-right text-xs text-gray-500 mt-2">Maks {{ $activity->settings['char_limit'] ?? 500 }} karakter. AI akan menganalisis sentimen Anda.</p>
-                </div>
-            @endif
-
-            <!-- Submit Button -->
-            <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-purple-500/25 transition transform active:scale-95">
-                Kirim Jawaban
-            </button>
-        </form>
+                <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold shadow-lg shadow-purple-500/20 transition transform active:scale-95">
+                    Submit Response
+                </button>
+            </form>
+        </div>
         @endif
-        
+
+        <div class="mt-8 text-center text-xs text-gray-600">
+            Powered by Vot.ai &bull; <a href="/" class="hover:text-gray-400">Create your own</a>
+        </div>
     </div>
 
 </body>

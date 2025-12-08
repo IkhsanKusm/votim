@@ -3,65 +3,76 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Folder;
 use App\Models\Activity;
+use App\Models\Folder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ActivityController extends Controller
 {
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create(Folder $folder)
     {
-        abort_if($folder->user_id !== auth()->id(), 403);
+        if ($folder->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         return view('pages.activities.create', compact('folder'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(Request $request, Folder $folder)
     {
-        abort_if($folder->user_id !== auth()->id(), 403);
-
-        // 1. Validasi Dasar
-        $request->validate([
-            'title' => 'required|string|max:150',
-            'type'  => 'required|in:single_choice,rating,open_opinion',
-            // Validasi conditional: opsi wajib ada jika tipe single_choice
-            'options' => 'required_if:type,single_choice|array|min:2',
-            'options.*' => 'required_if:type,single_choice|string|max:100',
-        ]);
-
-        // 2. Susun Payload JSONB berdasarkan Tipe
-        $settingsPayload = [];
-
-        if ($request->type === 'single_choice') {
-            // Simpan opsi voting ke dalam JSON settings
-            $settingsPayload = [
-                'options' => array_values($request->options), // Re-index array
-                'allow_multiple' => $request->has('allow_multiple'),
-                'randomize_order' => true
-            ];
-        } elseif ($request->type === 'open_opinion') {
-            $settingsPayload = [
-                'char_limit' => 500,
-                'sentiment_analysis' => true // Default true untuk fitur AI
-            ];
-        } elseif ($request->type === 'rating') {
-            $settingsPayload = [
-                'scale_max' => 5,
-                'icon' => 'star' // star, heart, thumb
-            ];
+        if ($folder->user_id !== auth()->id()) {
+            abort(403);
         }
 
-        // 3. Simpan ke Database
-        $activity = Activity::create([
-            'folder_id' => $folder->id,
-            'title' => $request->title,
-            'type'  => $request->type,
-            'slug'  => Str::slug($request->title) . '-' . Str::random(6), // Unik
-            'status' => 'active',
-            'settings' => $settingsPayload, // Magic happens here
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'type' => 'required|in:poll,opinion,qa', // Sesuai field 'type' di DB. Perlu disesuaikan dengan enum module folder jika ada restrict.
+            'options' => 'nullable|array', // Untuk tipe Poll
+            'settings' => 'nullable|array', // Config tambahan
         ]);
 
-        return redirect()->route('folders.show', $folder->id)
-            ->with('success', 'Activity launched successfully!');
+        // Construct settings JSON
+        $settings = $request->input('settings', []);
+        
+        // Jika tipe polling, masukkan options ke dalam settings
+        if ($request->has('options')) {
+            // Filter empty options
+            $options = array_filter($request->input('options'), function($value) {
+                return !is_null($value) && $value !== '';
+            });
+            $settings['options'] = array_values($options);
+        }
+
+        $activity = Activity::create([
+            'folder_id' => $folder->id,
+            'type' => $request->type,
+            'title' => $request->title,
+            'slug' => Str::slug($request->title) . '-' . Str::random(6),
+            'status' => 'active',
+            'settings' => $settings, // Auto-casted to JSON by Model
+        ]);
+
+        return redirect()->route('folders.show', $folder)->with('success', 'Activity created successfully.');
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Activity $activity)
+    {
+        // Simple authorization check
+        // Note: Public might need access later, but for dashboard editing/viewing:
+        if ($activity->folder->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('pages.activities.show', compact('activity'));
     }
 }

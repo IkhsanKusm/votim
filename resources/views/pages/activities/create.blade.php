@@ -1,114 +1,96 @@
-<x-app-layout title="New Activity">
-    
-    <div class="max-w-4xl mx-auto" x-data="{ 
-        selectedType: 'single_choice', 
-        votingOptions: ['', ''] 
-    }">
-        
-        <h2 class="text-2xl font-bold text-white mb-6">Create New Activity</h2>
-        
-        <!-- Form Start -->
-        <form action="{{ route('activities.store', $folder->id) }}" method="POST">
-            @csrf
-            
-            <!-- 1. General Info -->
-            <div class="glass-panel p-6 rounded-2xl mb-6">
-                <label class="block text-sm font-medium text-gray-400 mb-2">Question / Title</label>
-                <input type="text" name="title" required placeholder="e.g., Apa menu makan siang favorit kalian?" 
-                    class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition">
-            </div>
+@extends('layouts.app')
 
-            <!-- 2. Template Gallery (Selection) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                
-                <!-- Card: Single Choice (Voting) -->
-                <div @click="selectedType = 'single_choice'" 
-                     :class="selectedType === 'single_choice' ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 hover:border-white/30'"
-                     class="cursor-pointer glass-panel p-5 rounded-2xl border transition-all relative group">
-                    <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    </div>
-                    <h3 class="text-white font-semibold">Polling</h3>
-                    <p class="text-xs text-gray-500 mt-1">Pilihan Ganda standar. Hasil statistik langsung.</p>
-                    <input type="radio" name="type" value="single_choice" x-model="selectedType" class="hidden">
-                </div>
-
-                <!-- Card: Rating -->
-                <div @click="selectedType = 'rating'" 
-                     :class="selectedType === 'rating' ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 hover:border-white/30'"
-                     class="cursor-pointer glass-panel p-5 rounded-2xl border transition-all relative">
-                    <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-                    </div>
-                    <h3 class="text-white font-semibold">Rating</h3>
-                    <p class="text-xs text-gray-500 mt-1">Skala 1-5 Bintang atau Emoji.</p>
-                    <input type="radio" name="type" value="rating" x-model="selectedType" class="hidden">
-                </div>
-
-                <!-- Card: Open Opinion (AI Powered) -->
-                <div @click="selectedType = 'open_opinion'" 
-                     :class="selectedType === 'open_opinion' ? 'border-purple-500 bg-purple-500/10' : 'border-white/10 hover:border-white/30'"
-                     class="cursor-pointer glass-panel p-5 rounded-2xl border transition-all relative">
-                    <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center mb-3">
-                        <svg class="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    </div>
-                    <h3 class="text-white font-semibold">AI Opinion</h3>
-                    <p class="text-xs text-gray-500 mt-1">Teks bebas yang akan dianalisis sentimennya oleh Gemini AI.</p>
-                    <input type="radio" name="type" value="open_opinion" x-model="selectedType" class="hidden">
-                </div>
-            </div>
-
-            <!-- 3. Dynamic Configuration Area -->
-            
-            <!-- CONFIG: Single Choice -->
-            <div x-show="selectedType === 'single_choice'" class="glass-panel p-6 rounded-2xl mb-6 border border-white/5">
-                <h3 class="text-white font-medium mb-4">Voting Options</h3>
-                
-                <template x-for="(option, index) in votingOptions" :key="index">
-                    <div class="flex gap-2 mb-3">
-                        <input type="text" :name="'options[' + index + ']'" required x-model="votingOptions[index]" placeholder="Option..." 
-                            class="flex-1 bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-purple-500 outline-none">
-                        
-                        <!-- Delete Button (Only if > 2 options) -->
-                        <button type="button" @click="votingOptions.splice(index, 1)" x-show="votingOptions.length > 2"
-                            class="text-red-400 hover:text-red-300 px-2">
-                            &times;
-                        </button>
-                    </div>
-                </template>
-
-                <button type="button" @click="votingOptions.push('')" class="mt-2 text-sm text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1">
-                    <span>+ Add Another Option</span>
-                </button>
-
-                <div class="mt-6 pt-4 border-t border-white/5">
-                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" name="allow_multiple" class="w-4 h-4 rounded bg-white/10 border-white/20 text-purple-500">
-                        <span class="text-sm text-gray-400">Allow selecting multiple answers</span>
-                     </label>
-                </div>
-            </div>
-
-            <!-- CONFIG: Open Opinion -->
-            <div x-show="selectedType === 'open_opinion'" class="glass-panel p-6 rounded-2xl mb-6 border border-white/5">
-                <div class="flex items-start gap-3">
-                    <div class="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                        <span class="text-purple-400 text-xs font-bold">AI</span>
-                    </div>
-                    <div>
-                        <h3 class="text-white font-medium">AI Analysis Enabled</h3>
-                        <p class="text-sm text-gray-500 mt-1">Jawaban user akan diproses otomatis oleh Gemini untuk mendapatkan Sentimen & Keyword.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Button -->
-            <div class="flex justify-end">
-                <button type="submit" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg shadow-purple-500/20 transition-all transform hover:scale-[1.02]">
-                    Publish Activity
-                </button>
-            </div>
-
-        </form>
+@section('content')
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <a href="{{ route('folders.show', $folder) }}" class="text-gray-400 hover:text-white flex items-center gap-2 mb-2 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to {{ $folder->name }}
+        </a>
+        <h1 class="text-3xl font-bold text-white">Create New Activity</h1>
+        <p class="text-gray-500">Choose a template to start collecting data</p>
     </div>
-</x-app-layout>
+
+    <!-- Template Selection & Config Form -->
+    <form action="{{ route('activities.store', $folder) }}" method="POST" x-data="{ selectedType: 'poll' }">
+        @csrf
+        
+        <!-- Template Gallery Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Template 1: Quick Poll -->
+            <label class="cursor-pointer relative">
+                <input type="radio" name="type" value="poll" class="peer sr-only" x-model="selectedType">
+                <div class="p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all peer-checked:border-purple-500 peer-checked:bg-purple-500/10 peer-checked:shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center mb-4 text-purple-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-semibold text-lg">Quick Voting</h3>
+                    <p class="text-sm text-gray-400 mt-2">Multiple choice questions. Best for making decisions or quick surveys.</p>
+                </div>
+            </label>
+
+            <!-- Template 2: Public Opinion -->
+            <label class="cursor-pointer relative">
+                <input type="radio" name="type" value="opinion" class="peer sr-only" x-model="selectedType">
+                <div class="p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:shadow-[0_0_20px_rgba(59,130,246,0.2)]">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 text-blue-400">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    </div>
+                    <h3 class="text-white font-semibold text-lg">Public Opinion</h3>
+                    <p class="text-sm text-gray-400 mt-2">Open-ended questions. AI will summarize and detect sentiment.</p>
+                </div>
+            </label>
+        </div>
+
+        <!-- Configuration Section -->
+        <div class="glass-panel p-8 rounded-2xl border border-white/5">
+            <h2 class="text-xl font-semibold text-white mb-6">Configuration</h2>
+            
+            <!-- Common Field: Title -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-400 mb-2">Activity Question / Title</label>
+                <input type="text" name="title" required placeholder="e.g., What should we build next?" 
+                    class="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition">
+            </div>
+
+            <!-- Dynamic Fields: Voting Options -->
+            <div x-show="selectedType === 'poll'" class="mb-6 space-y-3" x-transition>
+                <label class="block text-sm font-medium text-gray-400">Voting Options</label>
+                
+                <div class="space-y-3" x-data="{ options: [1, 2] }">
+                    <template x-for="(opt, index) in options" :key="index">
+                        <div class="flex gap-2">
+                            <input type="text" name="options[]" :placeholder="'Option ' + (index + 1)" 
+                                class="flex-1 bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition">
+                        </div>
+                    </template>
+                    
+                    <button type="button" @click="options.push(options.length + 1)" 
+                        class="text-sm text-purple-400 hover:text-purple-300 font-medium flex items-center gap-1 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add another option
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Fields: Opinion Settings -->
+            <div x-show="selectedType === 'opinion'" class="mb-6" x-transition>
+                <div class="p-4 rounded-xl bg-blue-500/5 border border-blue-500/20 text-sm text-blue-200">
+                    <p class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        AI Aggregation will be enabled automatically for this activity type.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="pt-6 border-t border-white/5 flex justify-end">
+                <button type="submit" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/25 transition-all transform hover:scale-[1.02]">
+                    Create Activity
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+<script src="//unpkg.com/alpinejs" defer></script>
+@endsection
