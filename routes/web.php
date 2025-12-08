@@ -7,14 +7,24 @@ use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
 
 // Public Routes (Terapkan Guest Fingerprint via global middleware 'web')
-Route::get('/dashboard', function () {
-    // Contoh cara akses fingerprint di view/logic jika user belum login
-    // $fp = Cookie::get('vot_guest_fp');
-    return view('dashboard');
+Route::get('/', function () {
+    return view('layouts.app');
+})->name('home');
+
+// Auth Routes (Login is handled by AuthController manually for now, or via socialite)
+Route::controller(AuthController::class)->group(function () {
+    Route::get('/auth/google', 'redirectToGoogle')->name('login.google');
+    Route::get('/auth/google/callback', 'handleGoogleCallback');
+    Route::post('/logout', 'logout')->name('logout');
+});
+
+// Protected Protected Routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Dashboard
+    Route::get('/dashboard', function () {
+        return view('dashboard');
     })->name('dashboard');
 
-
-Route::middleware(['auth', 'verified'])->group(function () {
     // Folder CRUD
     Route::resource('folders', FolderController::class);
 
@@ -26,6 +36,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
 });
 
-// Public Routes
-Route::get('/v/{slug}', [PublicActivityController::class, 'show'])->name('public.show');
-Route::post('/v/{slug}', [PublicActivityController::class, 'submit'])->name('public.submit');
+// Public Activity Voting Routes
+Route::get('/v/{slug}', [PublicActivityController::class, 'show'])->name('public.activity.show');
+Route::post('/v/{slug}', [PublicActivityController::class, 'store'])->name('public.activity.store');

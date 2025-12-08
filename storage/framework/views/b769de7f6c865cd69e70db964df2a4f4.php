@@ -1,6 +1,6 @@
 
 
-<?php $__env->startSection('title', 'Insight Studio'); ?>
+<?php $__env->startSection('title', 'Dashboard'); ?>
 
 <?php $__env->startSection('content'); ?>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
