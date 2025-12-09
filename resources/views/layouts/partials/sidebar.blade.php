@@ -19,17 +19,17 @@
         </x-nav-link>
 
         <!-- Menu Item: Voting -->
-        <x-nav-link route="voting.index" icon="archive-box">
+        <x-nav-link route="folders.index" :params="['module' => 'voting']" icon="archive-box">
             Voting & Polling
         </x-nav-link>
 
         <!-- Menu Item: Public Opinion -->
-        <x-nav-link route="opinion.index" icon="chat-bubble-left-right">
+        <x-nav-link route="folders.index" :params="['module' => 'opinion']" icon="chat-bubble-left-right">
             Public Opinion
         </x-nav-link>
 
         <!-- Menu Item: Room Forum -->
-        <x-nav-link route="forum.index" icon="users">
+        <x-nav-link route="folders.index" :params="['module' => 'forum']" icon="users">
             Room Forum
         </x-nav-link>
 

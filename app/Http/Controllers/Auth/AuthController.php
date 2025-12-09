@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
-class AuthController extends Controller
+class AuthController
 {
     /**
      * Redirect user ke halaman login Google.

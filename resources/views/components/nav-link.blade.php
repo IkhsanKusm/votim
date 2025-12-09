@@ -1,7 +1,7 @@
-@props(['route', 'icon'])
+@props(['route', 'icon', 'params' => []])
 
 @php
-$isActive = request()->routeIs($route);
+$isActive = request()->routeIs($route) && (empty($params) || request()->route('module') == $params['module']);
 
 // Base Class
 $classes = 'flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 group relative overflow-hidden';
@@ -15,7 +15,7 @@ if ($isActive) {
 }
 @endphp
 
-<a href="{{ route($route) }}" {{ $attributes->merge(['class' => $classes]) }}>
+<a href="{{ route($route, $params)}}" {{ $attributes->merge(['class' => $classes]) }}>
     <!-- Active Indicator Bar (Left Side) -->
     @if($isActive)
         <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-purple-400 rounded-r-full shadow-[0_0_10px_#A855F7]"></div>
