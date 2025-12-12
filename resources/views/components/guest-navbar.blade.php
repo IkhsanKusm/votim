@@ -4,10 +4,10 @@
             <span class="material-symbols-outlined text-primary text-3xl">insights</span>
             <h2 class="text-white text-xl font-bold">Votim</h2>
         </div>
-        <div class="md:flex items-center gap-9">
-            <a class="text-white hover:text-primary text-sm font-medium leading-normal transition-colors" href="#features">Features</a>
+        <div class="md:flex items-center gap-12">
+            <a class="text-white hover:text-primary text-sm font-medium leading-normal transition-colors" href="{{ route('platform') }}">Platform</a>
             <a class="text-white hover:text-primary text-sm font-medium leading-normal transition-colors" href="#how-it-works">How it Works</a>
-            <a class="text-white hover:text-primary text-sm font-medium leading-normal transition-colors" href="#">Pricing</a>
+            <a class="text-white hover:text-primary text-sm font-medium leading-normal transition-colors" href="#pricing">Pricing</a>
         </div>
         <div class="flex gap-2">
             @auth

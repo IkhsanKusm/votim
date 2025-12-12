@@ -1,75 +1,92 @@
 <!DOCTYPE html>
-<html lang="id">
+<html class="dark" lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Login - Votim</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0B0F19; }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 300,
+            'GRAD' 0,
+            'opsz' 24
         }
-        .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
-            opacity: 0.6;
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#6325f4",
+                        "background-light": "#f6f5f8",
+                        "background-dark": "#151022",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
 </head>
-<body class="h-screen w-full flex items-center justify-center relative overflow-hidden text-gray-300">
-
+<body class="font-display">
+<div class="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden bg-[#0B0F19]">
+    
     <!-- Ambient Background -->
-    <div class="blob bg-purple-600 w-96 h-96 top-0 left-0 -translate-x-1/2 -translate-y-1/2"></div>
-    <div class="blob bg-blue-600 w-96 h-96 bottom-0 right-0 translate-x-1/2 translate-y-1/2"></div>
+    <div class="absolute -top-1/4 -left-1/4 h-1/2 w-1/2 rounded-full bg-gradient-to-br from-[#C887F6]/30 to-[#759DFF]/30 blur-3xl"></div>
+    <div class="absolute -bottom-1/4 -right-1/4 h-1/2 w-1/2 rounded-full bg-gradient-to-tl from-[#759DFF]/30 to-[#C887F6]/30 blur-3xl"></div>
 
-    <!-- Main Container -->
-    <div class="glass-panel p-10 rounded-3xl w-full max-w-sm relative z-10 shadow-2xl text-center">
-        
-        <!-- Logo/Brand -->
-        <div class="mb-8 flex flex-col items-center">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-purple-500/30 mb-4">
-                V
-            </div>
-            <h1 class="text-2xl font-bold text-white tracking-tight">Welcome Back</h1>
-            <p class="text-gray-500 text-sm mt-1">Masuk untuk mengelola insight Anda</p>
+    <div class="relative z-10 flex w-full max-w-md flex-col items-center gap-6 rounded-xl p-8 glass-effect">
+        <h1 class="text-[#E0E0E0] tracking-light text-[32px] font-bold leading-tight text-center">Welcome Back</h1>
+        <p class="text-[#A0AEC0] text-center -mt-4 mb-2">Sign in to access your insight studio</p>
+
+        <!-- Social Login Only (As requested) -->
+        <div class="flex flex-col w-full gap-4">
+            <a href="{{ route('login.google') }}" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-14 px-5 bg-white hover:bg-gray-100 text-[#151022] text-base font-bold leading-normal tracking-[0.015em] transition-all hover:shadow-lg gap-3">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
+                <span class="truncate">Continue with Google</span>
+            </a>
+            
+            <!-- Removed Facebook/Password login as per instructions to stick to our Google Auth -->
         </div>
 
-        <!-- Google Login Button -->
-        <a href="{{ route('login.google') }}" class="flex items-center justify-center gap-3 w-full bg-white hover:bg-gray-100 text-gray-900 font-semibold py-3.5 px-4 rounded-xl transition duration-200 shadow-lg group">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5 transition-transform group-hover:scale-110" alt="Google">
-            <span>Continue with Google</span>
-        </a>
-
-        <!-- Divider -->
-        <div class="my-8 flex items-center gap-4 opacity-50">
-            <div class="h-px bg-gray-700 flex-1"></div>
-            <span class="text-xs text-gray-500 uppercase tracking-widest">or</span>
-            <div class="h-px bg-gray-700 flex-1"></div>
-        </div>
-
-        <!-- Dev Bypass (Only Local) -->
         @if(app()->isLocal())
-        <div class="bg-white/5 border border-white/5 rounded-xl p-4 mb-6">
-            <p class="text-xs text-gray-400 mb-3 font-mono">Development Mode Access</p>
-            <a href="{{ url('/dev/login') }}" class="block w-full py-2 bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-xs font-bold rounded-lg border border-purple-500/30 transition">
-                🚀 Bypass as Admin
+        <div class="w-full pt-4">
+            <div class="relative flex w-full items-center justify-center py-2">
+                <div class="w-full h-px bg-white/10"></div>
+                <span class="absolute bg-[#1B1A28] px-3 text-xs text-[#a59cba] uppercase tracking-wider">Dev Mode</span>
+            </div>
+            
+            <a href="{{ url('/dev/login') }}" class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-white/5 border border-white/10 hover:bg-white/10 text-[#C887F6] text-sm font-bold leading-normal tracking-[0.015em] transition-all">
+                <span class="truncate">🚀 Bypass Login (Admin)</span>
             </a>
         </div>
         @endif
 
-        <!-- Footer -->
-        <div class="text-[10px] text-gray-600 leading-relaxed">
-            By continuing, you agree to Votim's 
-            <a href="#" class="underline hover:text-gray-400">Terms of Service</a> and 
-            <a href="#" class="underline hover:text-gray-400">Privacy Policy</a>.
-        </div>
+        <p class="text-[#a59cba] text-xs font-normal leading-normal pt-4 text-center">
+            By signing in, you agree to our <a class="font-bold text-white underline transition-colors hover:text-[#C887F6]" href="#"> Terms of Service</a> and <a class="font-bold text-white underline transition-colors hover:text-[#C887F6]" href="#"> Privacy Policy</a>
+        </p>
     </div>
-
+</div>
 </body>
 </html>

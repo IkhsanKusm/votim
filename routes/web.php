@@ -1,92 +1,70 @@
 <?php
 
-use App\Http\Controllers\Web\FolderController;
-use App\Http\Controllers\Web\ActivityController;
-use App\Http\Controllers\Web\PublicActivityController;
-use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
-/*
-|--------------------------------------------------------------------------
-| 1. GUEST ROUTES (Welcome, Login, Auth)
-|--------------------------------------------------------------------------
-*/
+Route::get('/', function () {
+    return view('welcome');
+})->name('home');
+
+Route::get('/platform', function () {
+    return view('pages.platform.index');
+})->name('platform');
+
+Route::get('/contact', function () {
+    return view('pages.contact.index');
+})->name('contact');
+
 Route::middleware('guest')->group(function () {
-    // Landing Page
-    Route::get('/', function () {
-        return view('welcome');
-    })->name('home');
+    Route::get('/login', function () {
+        return view('auth.login');
+    })->name('login');
 
-    // Login Page UI
-    Route::view('/login', 'auth.login')->name('login');
+    Route::get('/auth/google', [\App\Http\Controllers\Auth\AuthController::class, 'redirectToGoogle'])->name('login.google');
+    Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\AuthController::class, 'handleGoogleCallback']);
 
-    // Socialite Google Auth
-    Route::controller(AuthController::class)->group(function () {
-        Route::get('/auth/google', 'redirectToGoogle')->name('login.google');
-        Route::get('/auth/google/callback', 'handleGoogleCallback');
-    });
-
-    // DEV BYPASS: Login as Admin without Google (Local Auth)
+    // Development Bypass Route
     if (app()->isLocal()) {
         Route::get('/dev/login', function () {
-            // Create or Get Dummy Admin
-            $user = User::firstOrCreate(
+            $user = \App\Models\User::firstOrCreate(
                 ['email' => 'admin@vot.id'],
                 [
                     'display_name' => 'Admin Developer',
-                    'password' => '$2y$12$WJ.BUJXQtuTQrpbYRJfwPuC2IBuM92hAjzDtDx027SQ.xYIGm6Y/G', // dummy hash
-                    'plan_type' => 'pro',
-                    'google_id' => 'dev-bypass'
+                    'google_id' => 'dev_bypass',
+                    'avatar_url' => 'https://ui-avatars.com/api/?name=Admin+Developer',
                 ]
             );
-            
             Auth::login($user);
             return redirect()->route('dashboard');
-        })->name('dev.login');
+        });
     }
 });
 
-/*
-|--------------------------------------------------------------------------
-| 2. PROTECTED ROUTES (Dashboard, App Logic)
-|--------------------------------------------------------------------------
-*/
 Route::middleware(['auth'])->group(function () {
-    // Dashboard
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 
-    // Folder Management (Voting, Opinion, Forum)
-    Route::get('/{module}/folders', [FolderController::class, 'index'])
-        ->where('module', 'voting|opinion|forum')
-        ->name('folders.index');
-        
-    // Generic Folder Resource (Store, Show, etc)
-    Route::resource('folders', FolderController::class)->except(['index']);
-
-    // Activity Management
-    Route::get('/folders/{folder}/activities/create', [ActivityController::class, 'create'])->name('activities.create');
-    Route::post('/folders/{folder}/activities', [ActivityController::class, 'store'])->name('activities.store');
-    Route::get('/activities/{activity}', [ActivityController::class, 'show'])->name('activities.show');
-    
-    // Settings UI
     Route::get('/settings', function () {
-        return view('pages.settings.index'); 
+        return view('pages.settings.index');
     })->name('settings.index');
+    
+    Route::post('/logout', [\App\Http\Controllers\Auth\AuthController::class, 'logout'])->name('logout');
 
-    // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // Dynamic Module Routes
+    Route::get('/{module}/folders', function ($module) {
+        return view('dashboard'); // Placeholder, will point to folder index
+    })->where('module', 'voting|opinion|forum')->name('folders.index');
+
+    Route::resource('folders', \App\Http\Controllers\FolderController::class)->except(['index']);
+    
+    Route::get('/folders/{folder}/activities/create', [\App\Http\Controllers\ActivityController::class, 'create'])->name('activities.create');
+    Route::get('/activities/{activity}', [\App\Http\Controllers\ActivityController::class, 'show'])->name('activities.show');
 });
 
-/*
-|--------------------------------------------------------------------------
-| 3. PUBLIC VOTING ROUTES (Accessible by anyone)
-|--------------------------------------------------------------------------
-*/
-// Note: Guest Fingerprint is handled in Global Middleware or Controller
-Route::get('/v/{slug}', [PublicActivityController::class, 'show'])->name('public.activity.show');
-Route::post('/v/{slug}/submit', [PublicActivityController::class, 'submit'])->name('public.activity.submit');
-Route::get('/v/{slug}/closed', [PublicActivityController::class, 'closed'])->name('public.activity.closed');
+// Public Voting Routes (No Auth Required)
+Route::group(['prefix' => 'v'], function () {
+    Route::get('/{slug}', [\App\Http\Controllers\PublicActivityController::class, 'show'])->name('public.activity.show');
+    Route::get('/{slug}/vote', [\App\Http\Controllers\PublicActivityController::class, 'vote'])->name('public.activity.vote');
+    Route::post('/{slug}/submit', [\App\Http\Controllers\PublicActivityController::class, 'submit'])->name('public.activity.submit');
+    Route::get('/{slug}/closed', [\App\Http\Controllers\PublicActivityController::class, 'closed'])->name('public.activity.closed');
+});
