@@ -76,6 +76,7 @@
             right: 10%;
         }
     </style>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-background-dark font-display text-white">
 <div class="ambient-light-container">
@@ -180,6 +181,9 @@
     </main>
 
     <x-guest-footer />
+    
+    <!-- Cookie Consent Banner -->
+    <x-cookie-banner />
 </div>
 </body>
 </html>

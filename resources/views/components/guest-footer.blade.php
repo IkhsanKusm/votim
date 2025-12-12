@@ -3,8 +3,8 @@
         <p class="text-[#A0AEC0] text-sm">© {{ date('Y') }} Votim. All rights reserved.</p>
         <div class="flex items-center gap-10">
             <a class="text-[#A0AEC0] hover:text-white text-sm transition-colors" href="{{ route('contact') }}">Contact</a>
-            <a class="text-[#A0AEC0] hover:text-white text-sm transition-colors" href="{{ route('privacy-policy') }}">Privacy Policy</a>
-            <a class="text-[#A0AEC0] hover:text-white text-sm transition-colors" href="{{ route('terms-of-service') }}">Terms of Service</a>
+            <a class="text-[#A0AEC0] hover:text-white text-sm transition-colors" href="privacy-policy">Privacy Policy</a>
+            <a class="text-[#A0AEC0] hover:text-white text-sm transition-colors" href="terms-of-service">Terms of Service</a>
         </div>
     </div>
 </footer>

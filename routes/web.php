@@ -19,6 +19,10 @@ Route::middleware('guest')->group(function () {
         return view('auth.login');
     })->name('login');
 
+Route::get('/test-maintenance', function () {
+    abort(503);
+});
+
     Route::get('/auth/google', [\App\Http\Controllers\Auth\AuthController::class, 'redirectToGoogle'])->name('login.google');
     Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\AuthController::class, 'handleGoogleCallback']);
 

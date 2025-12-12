@@ -310,6 +310,9 @@
         </main>
         
         <x-guest-footer />
+        
+        <!-- Cookie Consent Banner -->
+        <x-cookie-banner />
     </div>
 </div>
 </body>
