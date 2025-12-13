@@ -14,6 +14,18 @@ Route::get('/contact', function () {
     return view('pages.contact.index');
 })->name('contact');
 
+Route::get('/legal', function () {
+    return view('pages.legal.index');
+})->name('legal');
+
+Route::get('/privacy-policy', function () {
+    return redirect('/legal#privacy-policy');
+});
+
+Route::get('/terms-of-service', function () {
+    return redirect('/legal#terms-of-service');
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return view('auth.login');
